@@ -67,19 +67,27 @@ async function run() {
     });
 
     // Verify Admin
-    const verifyAdmin = async (req , res , next) => {
-        const email = req.decoded.email;
-        const query = { email : email }
-        const user = await userCollection.findOne(query)
-        if(user?.role !== 'admin') {
-            return res.status(403).send({error : true , message : 'forbidden access'})
-        }
-        next()
-    }
+    const verifyAdmin = async (req, res, next) => {
+      const email = req.decoded.email;
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      if (user?.role !== "admin") {
+        return res
+          .status(403)
+          .send({ error: true, message: "forbidden access" });
+      }
+      next();
+    };
 
     // Menu related api
     app.get("/menu", async (req, res) => {
       const result = await menuCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.post("/menu", verifyJwt, verifyAdmin, async (req, res) => {
+      const newItem = req.body;
+      const result = await menuCollection.insertOne(newItem);
       res.send(result);
     });
 
@@ -127,7 +135,7 @@ async function run() {
 
     // User related api
 
-    app.get("/users", verifyJwt , async (req, res) => {
+    app.get("/users", verifyJwt, async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result);
     });
